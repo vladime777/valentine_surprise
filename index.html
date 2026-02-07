@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Surprise 💖</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Pacifico&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(180deg, #ffdde1 0%, #ee9ca7 100%);
+            --glass: rgba(255, 255, 255, 0.88);
+            --deep-pink: #ff4d6d;
+            --soft-pink: #ff85a2;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-gradient);
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- Floating Hearts Background --- */
+        .heart-bg {
+            position: absolute; width: 100%; height: 100%;
+            top: 0; left: 0; pointer-events: none; z-index: 1;
+        }
+
+        .floating-heart {
+            position: absolute; opacity: 0.6; animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- UI Container --- */
+        .container {
+            width: 85%; max-width: 380px; z-index: 10;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            padding: 40px 25px;
+            border-radius: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            border: 2px solid white;
+            text-align: center;
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- Pigeon Mascot Animations --- */
+        #mascot { 
+            font-size: 80px; 
+            margin-bottom: 10px;
+            display: inline-block;
+            transition: 0.3s;
+        }
+        
+        /* Happy wing flap */
+        .mascot-happy { animation: flap 0.5s ease-in-out; }
+        @keyframes flap {
+            0%, 100% { transform: scale(1) rotate(0); }
+            50% { transform: scale(1.2) rotate(-10deg); }
+        }
+
+        /* Angry head bob */
+        .mascot-mad { animation: peck 0.2s infinite; }
+        @keyframes peck {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px) rotate(5deg); }
+        }
+
+        /* --- Interactive Elements --- */
+        .balloon {
+            width: 100px; height: 130px; background: var(--deep-pink);
+            border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+            margin: 20px auto; cursor: pointer; 
+            animation: float 3s ease-in-out infinite;
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.1);
+        }
+
+        @keyframes float { 50% { transform: translateY(-20px); } }
+
+        .option-btn {
+            display: block; width: 100%; padding: 15px; margin: 10px 0;
+            border: 2px solid var(--soft-pink); background: white;
+            border-radius: 50px; cursor: pointer; font-weight: 700;
+            color: var(--deep-pink); transition: 0.3s;
+        }
+
+        .option-btn:hover { background: var(--soft-pink); color: white; }
+        .correct { background: #ff758c !important; color: white !important; }
+
+        .title-text { font-family: 'Pacifico', cursive; color: var(--deep-pink); font-size: 2rem; margin: 0 0 20px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="heart-bg" id="heart-bg"></div>
+
+    <div class="container">
+        <div id="scene1">
+            <h2 class="title-text">Gooter goo! ❤️</h2>
+            <div class="balloon" onclick="popBalloon()"></div>
+            <p style="color: #666; font-weight: bold;">Pop for a surprise...</p>
+        </div>
+
+        <div id="scene2" class="hidden">
+            <div id="mascot">🐦</div>
+            <h3 id="question-text" style="color: #444; margin-bottom: 20px;"></h3>
+            <div id="options-container"></div>
+        </div>
+
+        <div id="scene4" class="hidden">
+            <h1 class="title-text">Will you be my Valentine?</h1>
+            <div id="final-mascot" style="font-size: 70px; margin-bottom: 20px;">🐦💍💌</div>
+            <button class="option-btn" onclick="celebrate()">YES! 💖</button>
+            <button class="option-btn" onclick="celebrate()">A THOUSAND TIMES YES! 💘</button>
+        </div>
+    </div>
+
+    <script>
+        // Background Hearts
+        const bg = document.getElementById('heart-bg');
+        for (let i = 0; i < 20; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'floating-heart';
+            heart.innerText = '🌸';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+            heart.style.animationDelay = (Math.random() * 5) + 's';
+            bg.appendChild(heart);
+        }
+
+        const quizData = [
+            { q: "What is my absolute favorite thing about you?", o: ["Your laugh", "Your kindness", "Everything. Is this a trick question? 💖"], a: 2 },
+            { q: "How many times a day do I think about you?", o: ["1–10 times", "50–100 times", "The limit does not exist 💖"], a: 2 },
+            { q: "Who is my favorite person in the whole wide world?", o: ["The girl reading this 😍", "You! ✨", "Both A & B (Duh!) 💘"], a: 2 }
+        ];
+
+        let currentQuestion = 0;
+
+        function popBalloon() {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            document.getElementById('scene1').classList.add('hidden');
+            document.getElementById('scene2').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const data = quizData[currentQuestion];
+            document.getElementById('question-text').innerText = data.q;
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            data.o.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(idx, btn) {
+            const mascot = document.getElementById('mascot');
+            if (idx === quizData[currentQuestion].a) {
+                mascot.innerText = '🕊️'; 
+                mascot.classList.add('mascot-happy');
+                btn.classList.add('correct');
+                setTimeout(() => {
+                    mascot.classList.remove('mascot-happy');
+                    mascot.innerText = '🐦';
+                    currentQuestion++;
+                    if (currentQuestion < quizData.length) loadQuestion();
+                    else showProposal();
+                }, 1000);
+            } else {
+                mascot.innerText = '🐦'; 
+                mascot.classList.add('mascot-mad');
+                btn.style.borderColor = 'red';
+                setTimeout(() => { 
+                    mascot.classList.remove('mascot-mad'); 
+                    btn.style.borderColor = 'var(--soft-pink)';
+                }, 800);
+            }
+        }
+
+        function showProposal() {
+            document.getElementById('scene2').classList.add('hidden');
+            document.getElementById('scene4').classList.remove('hidden');
+        }
+
+        function celebrate() {
+            confetti({ particleCount: 300, spread: 100, origin: { y: 0.6 } });
+            document.querySelector('.container').innerHTML = `
+                <h1 class="title-text">YAYYY! ❤️</h1>
+                <div style="font-size: 80px; margin: 20px 0;">🐦❤️🕊️</div>
+                <p style="font-weight: bold; color: var(--deep-pink);">Gooter goo! (That means I love you soo much)</p>
+            `;
+        }
+    </script>
+</body>
+</html>
